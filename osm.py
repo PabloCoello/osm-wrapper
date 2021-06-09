@@ -31,15 +31,17 @@ def format_geom(geometry):
     return Polygon(list(map(lambda x: Point([list(x.values())[1], list(x.values())[0]]),geometry)))
     
 def unpack(row):
-    if row['members'][0]['type'] != 'node':
+    if (row['members'][0]['type'] != 'node') & (len(row['members']) > 0):
         elem = row['members'][0]
         elem['geometry'] = format_geom(elem['geometry'])
         toret = gpd.GeoDataFrame(elem, geometry='geometry', index=range(len(row['members'][0])))
-    else:
+    elif(row['members'][0]['type'] == 'node'):
         toret = gpd.GeoDataFrame(
             row['members'][0], geometry=gpd.points_from_xy(
                 row['members'][0]['lon'], 
                 row['members'][0]['lat']))
+    else:
+        return None
     
     for i, elem in enumerate(row['members']):
         try:
@@ -99,7 +101,7 @@ def get_osm(tag, type, country, admin_level, variables):
         res = []
         for row in df.iterrows():
             res.append(unpack(row[1]))
-            df['bounds'] = res 
+        df['bounds'] = res 
             #df.apply(unpack, axis=1)
         variables.append('bounds')
         return gpd.GeoDataFrame(df[variables],geometry='bounds')
