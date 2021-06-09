@@ -1,11 +1,8 @@
 from numpy.lib.index_tricks import AxisConcatenator
 import requests
-import json
 import geopandas as gpd
 import pandas as pd
 import collections
-from shapely import wkt
-from shapely import geometry
 from shapely.geometry import Point
 from shapely.geometry import Polygon
 from geopandas.tools import sjoin
@@ -100,26 +97,31 @@ def get_osm(tag, type, country, admin_level, variables):
     else:
         res = []
         for row in df.iterrows():
-            res.append(unpack(row[1]))
+            try:
+                res.append(unpack(row[1])[1])
+            except:
+                res.append(None)
         df['bounds'] = res 
+        df = df.dropna(subset=['bounds'])
             #df.apply(unpack, axis=1)
         variables.append('bounds')
         return gpd.GeoDataFrame(df[variables],geometry='bounds')
     
-'''
-nodes = get_osm(
-    tag='historic',
-    type='node', 
-    country='ES',
-    admin_level='2',
-    variables=['type','id','tags_historic','tags_name','tags_description']
-)
-'''
-relations = get_osm(
-    tag='historic',
-    type='rel', 
-    country='ES',
-    admin_level='2',
-    variables=['type','id','tags_historic','tags_name','tags_description'] 
-)
-relations.to_file('relations.shp')
+if __name__ == '__main__':
+    nodes = get_osm(
+        tag='historic',
+        type='node', 
+        country='ES',
+        admin_level='2',
+        variables=['type','id','tags_historic','tags_name','tags_description']
+    )
+    nodes.to_file('nodes.shp')
+
+    relations = get_osm(
+        tag='historic',
+        type='rel', 
+        country='ES',
+        admin_level='2',
+        variables=['type','id','tags_historic','tags_name','tags_description'] 
+        )
+    relations.to_file('relations.shp')
