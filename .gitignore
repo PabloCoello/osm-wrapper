@@ -1,3 +1,11 @@
+# geo
+*.shp
+*.dbf
+*.cpg
+*.shx
+*.prj
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
